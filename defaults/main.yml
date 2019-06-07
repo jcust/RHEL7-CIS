@@ -51,10 +51,10 @@ rhel7cis_rule_1_2_2: true
 rhel7cis_rule_1_2_3: true
 rhel7cis_rule_1_2_4: true
 rhel7cis_rule_1_2_5: true
-rhel7cis_rule_1_3_1: true
-rhel7cis_rule_1_3_2: true
+rhel7cis_rule_1_3_1: false
+rhel7cis_rule_1_3_2: false
 rhel7cis_rule_1_4_1: true
-rhel7cis_rule_1_4_2: true
+rhel7cis_rule_1_4_2: false
 rhel7cis_rule_1_4_3: true
 rhel7cis_rule_1_5_1: true
 rhel7cis_rule_1_5_2: true
@@ -128,18 +128,18 @@ rhel7cis_rule_3_3_2: true
 rhel7cis_rule_3_3_3: true
 rhel7cis_rule_3_4_1: true
 rhel7cis_rule_3_4_2: true
-rhel7cis_rule_3_4_3: true
+rhel7cis_rule_3_4_3: false
 rhel7cis_rule_3_4_4: true
 rhel7cis_rule_3_4_5: true
 rhel7cis_rule_3_5_1: true
 rhel7cis_rule_3_5_2: true
 rhel7cis_rule_3_5_3: true
 rhel7cis_rule_3_5_4: true
-rhel7cis_rule_3_6_1: true
-rhel7cis_rule_3_6_2: true
-rhel7cis_rule_3_6_3: true
-rhel7cis_rule_3_6_4: true
-rhel7cis_rule_3_6_5: true
+rhel7cis_rule_3_6_1: false
+rhel7cis_rule_3_6_2: false
+rhel7cis_rule_3_6_3: false
+rhel7cis_rule_3_6_4: false
+rhel7cis_rule_3_6_5: false
 
 # Section 4 rules
 rhel7cis_rule_4_1_1_1: true
@@ -202,8 +202,8 @@ rhel7cis_rule_5_2_15: true
 rhel7cis_rule_5_2_16: true
 rhel7cis_rule_5_3_1: true
 rhel7cis_rule_5_3_2: true
-rhel7cis_rule_5_3_3: true
-rhel7cis_rule_5_3_4: true
+rhel7cis_rule_5_3_3: false
+rhel7cis_rule_5_3_4: false
 rhel7cis_rule_5_4_1_1: true
 rhel7cis_rule_5_4_1_2: true
 rhel7cis_rule_5_4_1_3: true
@@ -285,7 +285,7 @@ rhel7cis_rhnsd_required: false
 
 # 1.4.2 Bootloader password
 rhel7cis_bootloader_password: random
-rhel7cis_set_boot_pass: false
+rhel7cis_set_boot_pass: true
 
 # System network parameters (host only OR host and router)
 rhel7cis_is_router: false
@@ -294,7 +294,7 @@ rhel7cis_is_router: false
 rhel7cis_ipv6_required: true
 
 # AIDE
-rhel7cis_config_aide: true
+rhel7cis_config_aide: false
 # AIDE cron settings
 rhel7cis_aide_cron:
   cron_user: root
@@ -315,7 +315,7 @@ rhel7cis_gui: no
 # Set to 'true' if X Windows is needed in your environment
 rhel7cis_xwindows_required: no
 
-rhel7cis_openldap_clients_required: false
+rhel7cis_openldap_clients_required: true
 rhel7cis_telnet_required: false
 rhel7cis_talk_required: false
 rhel7cis_rsh_required: false
@@ -326,10 +326,10 @@ rhel7cis_time_synchronization: chrony
 #rhel7cis_time_synchronization: ntp
 
 rhel7cis_time_synchronization_servers:
-    - 0.pool.ntp.org
-    - 1.pool.ntp.org
-    - 2.pool.ntp.org
-    - 3.pool.ntp.org
+    - time-a-g.nist.gov
+    - time-a-wwv.nist.gov
+    - time-a-b.nist.gov
+    - time.nist.gov
 
 # 3.4.2 | PATCH | Ensure /etc/hosts.allow is configured
 rhel7cis_host_allow:
@@ -337,8 +337,8 @@ rhel7cis_host_allow:
     - "172.16.0.0/255.240.0.0"
     - "192.168.0.0/255.255.0.0"
 
-rhel7cis_firewall: firewalld
-#rhel7cis_firewall: iptables
+#rhel7cis_firewall: firewalld
+rhel7cis_firewall: iptables
 
 rhel7cis_firewall_services:
     - ssh
@@ -346,8 +346,29 @@ rhel7cis_firewall_services:
 
 # Warning Banner Content (issue, issue.net, motd)
 rhel7cis_warning_banner: |
-    Authorized uses only. All activity may be monitored and reported.
+    #########################################################
+    #                Authorized users only.                 #
+    #                                                       #
+    # You are accessing a U.S. Government (USG) information #
+    # System (IS). IS usage may be monitored, recorded, and #
+    # subject to audit.                                     #
+    #                                                       #
+    # Unauthorized use of the IS is prohibited and subject  #
+    # to criminal and civil penalties.                      #
+    #                                                       #
+    # Use of the IS indicates consent to monitoring and     #
+    # recording.                                            #
+    #########################################################
 # End Banner
+
+# MOTD
+rhel7cis_motd_waggl: |
+    #########################################################
+    #                                                       #
+    #                      Waggl, Inc.                      #
+    #                                                       #
+    #########################################################
+# End MOTD
 
 ## Section4 vars
 
@@ -355,13 +376,88 @@ rhel7cis_auditd:
     admin_space_left_action: halt
     max_log_file_action: keep_logs
 
+rhel7cis_auditd_cfg: |
+    -a always,exit -F arch=b32 -S settimeofday -F key=audit_time_rules
+    -a always,exit -F arch=b64 -S settimeofday -F key=audit_time_rules
+    -a always,exit -F arch=b32 -S adjtimex -F key=audit_time_rules
+    -a always,exit -F arch=b64 -S adjtimex -F key=audit_time_rules
+    -a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -F key=time-change
+    -a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -F key=time-change
+    -w /etc/localtime -p wa -k time-change
+    -w /etc/group -p wa -k identity
+    -w /etc/passwd -p wa -k identity
+    -w /etc/gshadow -p wa -k identity
+    -w /etc/shadow -p wa -k identity
+    -w /etc/security/opasswd -p wa -k identity
+    -a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale
+    -w /etc/issue.net -p wa -k system-locale
+    -w /etc/hosts -p wa -k system-locale
+    -w /etc/sysconfig/network -p wa -k system-locale
+    -w /var/log/tallylog -p wa -k logins
+    -w /var/run/faillock/ -p wa -k logins
+    -w /var/log/lastlog -p wa -k logins
+    -w /var/run/utmp -p wa -k session
+    -w /var/log/wtmp -p wa -k session
+    -w /var/log/btmp -p wa -k session
+    -a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+    -a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+    -a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+    -a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+    -a always,exit -F arch=b64 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+    -a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+    -a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b64 -S rmdir,unlink,unlinkat,rename,renameat -F auid>=1000 -F auid!=4294967295 -F key=delete
+    -a always,exit -F arch=b64 -S sethostname,setdomainname -F key=audit_rules_networkconfig_modification
+    -w /etc/issue -p wa -k audit_rules_networkconfig_modification
+    -w /etc/issue.net -p wa -k audit_rules_networkconfig_modification
+    -w /etc/hosts -p wa -k audit_rules_networkconfig_modification
+    -w /etc/sysconfig/network -p wa -k audit_rules_networkconfig_modification
+    -w /sbin/insmod -p x -k modules
+    -w /sbin/rmmod -p x -k modules
+    -w /sbin/modprobe -p x -k modules
+    -w /usr/sbin/insmod -p x -k modules
+    -w /usr/sbin/rmmod -p x -k modules
+    -w /usr/sbin/modprobe -p x -k modules
+    -a always,exit -F arch=b64 -S init_module -S delete_module -k modules
+    -a always,exit -F path=/usr/bin/wall -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/chage -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/gpasswd -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/chsh -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/newgrp -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/mount -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/su -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/sudo -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/umount -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/write -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/at -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/crontab -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/pkexec -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/pam_timestamp_check -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/unix_chkpwd -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/netreport -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/usernetctl -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/mount.nfs -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/postdrop -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/sbin/postqueue -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/lib/polkit-1/polkit-agent-helper-1 -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/lib64/dbus-1/dbus-daemon-launch-helper -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/libexec/utempter/utempter -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -a always,exit -F path=/usr/libexec/openssh/ssh-keysign -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+    -e 2
+
 ## Section5 vars
 
 rhel7cis_sshd:
-    clientalivecountmax: 3
+    clientalivecountmax: 0
     clientaliveinterval: 300
     ciphers: "aes256-ctr,aes192-ctr,aes128-ctr"
-    macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
+    macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256"
     logingracetime: 60
     # - make sure you understand the precedence when working with these values!!
     #allowusers:
@@ -382,3 +478,30 @@ rhel7cis_vartmp:
     fstype: none
     opts: "defaults, nodev, nosuid, noexec, bind"
     enabled: no
+
+rhel7cis_pam_cfg: |
+    #%PAM-1.0
+    # This file is auto-generated.
+    # User changes will be destroyed the next time authconfig is run.
+    auth        required      pam_env.so
+    auth        required      pam_faillock.so preauth audit silent deny=3 unlock_time=1800
+    auth        [success=1 default=bad] pam_unix.so nullok try_first_pass
+    auth        [default=die] pam_faillock.so authfail audit deny=3 unlock_time=1800
+    auth        sufficient    pam_faillock.so authsucc audit deny=3 unlock_time=1800
+    auth        requisite     pam_succeed_if.so uid >= 1000 quiet_success
+    auth        required      pam_deny.so
+
+    account     required      pam_unix.so
+    account     sufficient    pam_localuser.so
+    account     sufficient    pam_succeed_if.so uid < 1000 quiet
+    account     required      pam_permit.so
+
+    password    requisite     pam_pwquality.so retry=3 try_first_pass local_users_only authtok_type=
+    password    sufficient    pam_unix.so remember=5 sha512 shadow nullok try_first_pass use_authtok
+    password    required      pam_deny.so
+
+    session     optional      pam_keyinit.so revoke
+    session     required      pam_limits.so
+    -session     optional      pam_systemd.so
+    session     [success=1 default=ignore] pam_succeed_if.so service in crond quiet use_uid
+    session     required      pam_unix.so

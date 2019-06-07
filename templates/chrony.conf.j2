@@ -60,6 +60,10 @@ dumpdir /var/lib/chrony
 
 local stratum 10
 
+# Step if time difference is greater than 1 second
+
+makestep 1.0 3
+
 # Allow computers on the unrouted nets to use the server.
 
 #allow 10/8

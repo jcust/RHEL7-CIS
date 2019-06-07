@@ -7,3 +7,32 @@
   ignore_errors: yes
   tags:
       - skip_ansible_lint
+
+
+# Enable SSH password auth since we use this for temp user script
+- name: Enable SSH password auth
+  lineinfile:
+      state: present
+      dest: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication'
+      line: 'PasswordAuthentication yes'
+  tags:
+      - waggl
+
+# Also need to modify cloud init to keep password auth enabled
+- name: Enable SSH password auth in cloud.cfg
+  lineinfile:
+      state: present
+      dest: /etc/cloud/cloud.cfg
+      regexp: '^ssh_pwauth'
+      line: 'ssh_pwauth: 1'
+  tags:
+      - waggl
+
+# # Disable direct root logins
+# - name: Disable direct root logins
+#   command: "echo > /etc/securetty"
+#   ignore_errors: yes
+#   tags:
+#       - waggl
+#       - c2s

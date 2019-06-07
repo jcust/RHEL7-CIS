@@ -246,8 +246,12 @@
       - rule_6.2.5
 
 - name: "SCORED | 6.2.6 | PATCH | Ensure root PATH Integrity"
-  command: /bin/true
-  changed_when: no
+  file:
+      path: /root/bin
+      state: directory
+      owner: root
+      group: root
+      mode: 0700
   when:
       - rhel7cis_rule_6_2_6
   tags:
@@ -255,7 +259,6 @@
       - level2
       - patch
       - rule_6.2.6
-      - notimplemented
 
 - name: "SCORED | 6.2.7 | PATCH | Ensure all users' home directories exist"
   command: /bin/true

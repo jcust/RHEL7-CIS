@@ -2,7 +2,7 @@
   lineinfile:
       dest: /etc/audit/auditd.conf
       regexp: "^max_log_file( |=)"
-      line: "max_log_file = 10"
+      line: "max_log_file = 20"
       state: present
   when:
       - rhel7cis_rule_4_1_1_1
@@ -25,6 +25,21 @@
       - auditd
       - patch
       - rule_4.1.1.2
+
+- name: "C2S | PATCH | confnigure space_left Action"
+  lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "^space_left_action"
+      line: "space_left_action = email"
+      state: present
+  when:
+      - rhel7cis_rule_4_1_1_2
+  tags:
+      - level2
+      - auditd
+      - patch
+      - c2s
+      - waggl
 
 - name: "SCORED | 4.1.1.3 | PATCH | Ensure audit logs are not automatically deleted"
   lineinfile:
@@ -70,17 +85,29 @@
       - patch
       - rule_4.1.3
 
-- name: "SCORED | 4.1.4 | PATCH | Ensure events that modify date and time information are collected"
-  command: /bin/true
-  changed_when: no
+- name: "SCORED | 4.1.x | PATCH | auditd configurations - rolling multiple items into one block"
+  template:
+      src: etc/audit.rules.j2
+      dest: /etc/audit/rules.d/audit.rules
   when:
       - rhel7cis_rule_4_1_4
   tags:
+      - waggl
       - level2
       - auditd
       - patch
-      - rule_4.1.4
-      - notimplemented
+
+# - name: "SCORED | 4.1.4 | PATCH | Ensure events that modify date and time information are collected"
+#   command: /bin/true
+#   changed_when: no
+#   when:
+#       - rhel7cis_rule_4_1_4
+#   tags:
+#       - level2
+#       - auditd
+#       - patch
+#       - rule_4.1.4
+#       - notimplemented
 
 - name: "SCORED | 4.1.5 | PATCH | Ensure events that modify user/group information are collected"
   command: /bin/true
@@ -107,8 +134,10 @@
       - notimplemented
 
 - name: "SCORED | 4.1.7 | PATCH | Ensure events that modify the system's Mandatory Access Controls are collected"
-  command: /bin/true
-  changed_when: no
+  lineinfile:
+      dest: /etc/audit/rules.d/audit.rules
+      line: "-w /etc/selinux/ -p wa -k MAC-policy"
+      state: present
   when:
       - rhel7cis_rule_4_1_7
   tags:
@@ -116,7 +145,6 @@
       - auditd
       - patch
       - rule_4.1.7
-      - notimplemented
 
 - name: "SCORED | 4.1.8 | PATCH | Ensure login and logout events are collected"
   command: /bin/true
@@ -275,8 +303,10 @@
       - rule_4.1.15
 
 - name: "SCORED | 4.1.16 | PATCH | Ensure system administrator actions (sudolog) are collected"
-  command: /bin/true
-  changed_when: no
+  lineinfile:
+      dest: /etc/audit/rules.d/audit.rules
+      line: "-w /var/log/sudo.log -p wa -k actions"
+      state: present
   when:
       - rhel7cis_rule_4_1_16
   tags:
@@ -284,7 +314,6 @@
       - auditd
       - patch
       - rule_4.1.16
-      - notimplemented
 
 - name: "SCORED | 4.1.17 | PATCH | Ensure kernel module loading and unloading is collected"
   command: /bin/true
@@ -350,7 +379,7 @@
   lineinfile:
       dest: /etc/rsyslog.conf
       regexp: '^\$FileCreateMode'
-      line: '$FileCreateMode 0640'
+      line: '$FileCreateMode 0600'
   when:
       - rhel7cis_rule_4_2_1_3
   tags:
